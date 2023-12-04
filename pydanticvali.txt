@@ -1,0 +1,96 @@
+class RetinopathyData(BaseModel):
+    patient_id:UUID4 = Field(default_factory=uuid4)
+    hospital_id:UUID4 = Field(default_factory=uuid4)
+    encounter_number:str
+    Age:int
+    Systolic_BP:Union[float,int]
+    Diastolic_BP:Union[float,int]
+    Cholesterol:Union[float,int]
+
+    # @field_validator('patient_id')
+    # @classmethod
+    # def val_patient_Id(cls, v) -> str:
+    #     if len(v)<6:
+    #         raise PydanticCustomError(
+    #             'Field Value',
+    #             'Patient id is invalid!',
+    #         )
+    #     return v
+
+    # @model_validator(mode='before')
+    # @classmethod
+    # def check_card_number_omitted(cls, data: Any) -> Any:
+    #     if isinstance(data, dict):
+    #         assert (
+    #                 'card_number' not in data
+    #         ), 'card_number should not be included'
+    #     return data
+
+    # @model_validator(mode='before')
+    # def autofill_id(cls, data):
+    #     if 'id' not in data:
+    #         data['id'] = data['url'].split('/')[-1]
+    #     return data
+    @model_validator(mode='before')
+    @classmethod
+    def validate_data(cls,data):
+        if 'patient_id' not in data:
+            raise ValueError("Patient ID is required")
+
+        if 'hospital_id' not in data:
+            raise ValueError("Hospital ID is required")
+
+        if 'encounter_number' not in data:
+            raise ValueError("Encounter Number is required")
+        if 'Diastolic_BP' not in data:
+            raise ValueError("Diastolic_BP is required")
+
+        patient_id = data['patient_id']
+        hospital_id = data['hospital_id']
+        encounter_number = data['encounter_number']
+        age = data['Age']
+        diastolic_bp = data['Diastolic_BP']
+        systolic_bp = data['Systolic_BP']
+        cholesterol = ['Cholesterol']
+
+        if not isinstance(patient_id,UUID):
+            raise ValueError("Patient ID is invalid")
+
+        if not isinstance(hospital_id, UUID):
+            raise ValueError("Hospital ID is invalid")
+
+        if not isinstance(encounter_number,str) or  len(encounter_number)<8 or len(encounter_number)>15:
+            raise ValueError("Encounter number must be of length between 8 to 15")
+        if not isinstance(age,int) or age<=0 or age>200:
+            raise ValueError("Age must be integer greater than 0")
+        if diastolic_bp<=0 or systolic_bp<=0 or diastolic_bp>200 or systolic_bp>300:
+            raise ValueError("Blood Pressure is invalid")
+        if diastolic_bp>systolic_bp:
+            raise ValueError("Diastolic bp cannot be greater than Systolic bp")
+        if cholesterol<=0 or cholesterol >300:
+            raise ValueError("Cholesterol is invalid")
+        return data
+
+    # @model_validator(mode='after')
+    # def validate_data(self)-> 'RetinopathyData':
+    #
+    #     patient_id=self.patient_id
+    #     hospital_id = self.hospital_id
+    #     encounter_number = self.encounter_number
+    #     age = self.Age
+    #     diastolic_bp = self.Diastolic_BP
+    #     systolic_bp = self.Systolic_BP
+    #     cholesterol = self.Cholesterol
+    #
+    #
+    #     if not isinstance(encounter_number,str) or  len(encounter_number)<8 or len(encounter_number)>15:
+    #         raise ValueError("Encounter number must be of length between 8 to 15")
+    #     if not isinstance(age,int) or age<=0 or age>200:
+    #         raise ValueError("Age must be integer greater than 0")
+    #     if diastolic_bp<=0 or systolic_bp<=0 or diastolic_bp>200 or systolic_bp>300:
+    #         raise ValueError("Blood Pressure is invalid")
+    #     if diastolic_bp>systolic_bp:
+    #         raise ValueError("Diastolic bp cannot be greater than Systolic bp")
+    #     if cholesterol<=0 or cholesterol >300:
+    #         raise ValueError("Cholesterol is invalid")
+    #     return self
